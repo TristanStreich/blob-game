@@ -84,9 +84,12 @@ public class BlobController : MonoBehaviour
 
     void OnCollisionEnter(Collision collision)
     {
+
+        float bouncePosition = GetAverageYPosition(collision);
         // Calculate the bounce force based on the maximum reached height
-        float potentialEnergy = - mass * Physics.gravity.y * maxReachedHeight;
+        float potentialEnergy = - mass * Physics.gravity.y * (maxReachedHeight - bouncePosition);
         float kineticEnergy = potentialEnergy * bounceDampening;
+
         float bounceSpeed = Mathf.Sqrt(2 * kineticEnergy / mass);
         if (bounceSpeed < minBounceSpeed) {
             bounceSpeed = 0f;
@@ -112,5 +115,15 @@ public class BlobController : MonoBehaviour
         Jumping.GetComponent<Renderer>().enabled = true;
         Standing.GetComponent<Renderer>().enabled = false;
     }
+
+    float GetAverageYPosition(Collision collision) {
+        float sum = 0f;
+        foreach (ContactPoint contact in collision.contacts)
+        {
+            sum += contact.point.y;
+        }
+        return sum / collision.contacts.Length;
+    }
+
 }
 
