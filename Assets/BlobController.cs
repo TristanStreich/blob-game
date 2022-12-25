@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Utils;
 
 public class BlobController : MonoBehaviour
 {
@@ -15,7 +16,6 @@ public class BlobController : MonoBehaviour
     private Rigidbody rb;
     private float maxReachedHeight;
     private float mass;
-    private bool isJumping;
     private bool isGrounded;
     private float jumpStartTime;
     private GameObject Standing;
@@ -42,59 +42,33 @@ public class BlobController : MonoBehaviour
 
     void Update()
     {
-        // Get input from the horizontal and vertical axes
-        float horizontalInput = Input.GetAxis("Horizontal");
-        float verticalInput = Input.GetAxis("Vertical");
-
-        // Calculate the movement vector based on the input and move speed
-        Vector3 moveDirection = new Vector3(horizontalInput, 0, verticalInput) * moveSpeed;
-
-        // Set the horizontal velocity based on the movement vector
-        rb.velocity = new Vector3(moveDirection.x, rb.velocity.y, moveDirection.z);
+        // move blob
+        HandleDirectionalInputs();
 
         // Update the maximum reached height
         maxReachedHeight = Mathf.Max(maxReachedHeight, transform.position.y);
 
-        if (!isGrounded) {return;}
-
-      // Check if the jump button is being held down
-        if (Input.GetButton("Jump"))
-        {
-            // If the jump button was just pressed, set the jump start time
-            if (!isJumping)
-            {
-                isJumping = true;
-                jumpStartTime = Time.time;
-            }
-        }
-        // If the jump button is released, reset the jump start time and isJumping flag
-        else
-        {
-            if (isJumping) {
-                float elapsedTime = Time.time - jumpStartTime;
-                Debug.Log(elapsedTime);
-                float jumpForce = Mathf.Lerp(minJumpForce, maxJumpForce, elapsedTime / jumpHoldDuration);
-                rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-                isJumping = false;
-                unGround();
-            }
-        }
-
+        // accept space bar inputs if grounded
+        if (isGrounded) HandleJumpingInputs();
     }
 
     void OnCollisionEnter(Collision collision)
     {
 
-        float bouncePosition = GetAverageYPosition(collision);
-        // Calculate the bounce force based on the maximum reached height
-        float potentialEnergy = - mass * Physics.gravity.y * (maxReachedHeight - bouncePosition);
+        float bouncePosition = collision.AveragePosition().y;
+        float heightDifference = maxReachedHeight - bouncePosition;
+        // Calculate the bounce speed based on the heightDifference
+        float potentialEnergy = - mass * Physics.gravity.y * (heightDifference);
         float kineticEnergy = potentialEnergy * bounceDampening;
-
         float bounceSpeed = Mathf.Sqrt(2 * kineticEnergy / mass);
+        // stick to ground if bounce will be small
         if (bounceSpeed < minBounceSpeed) {
             bounceSpeed = 0f;
             ground();
         }
+
+        // remove NaNs
+        bounceSpeed = float.IsNaN(bounceSpeed) ? 0f : bounceSpeed;
 
         // If the blob collides with something, add a bounce velocity to its velocity
         rb.velocity = new Vector3(rb.velocity.x, bounceSpeed, rb.velocity.z);
@@ -116,14 +90,34 @@ public class BlobController : MonoBehaviour
         Standing.GetComponent<Renderer>().enabled = false;
     }
 
-    float GetAverageYPosition(Collision collision) {
-        float sum = 0f;
-        foreach (ContactPoint contact in collision.contacts)
-        {
-            sum += contact.point.y;
-        }
-        return sum / collision.contacts.Length;
+    // moves the blob based on wasd or arrow keys
+    public void HandleDirectionalInputs() {
+        // Get input from the horizontal and vertical axes
+        float horizontalInput = Input.GetAxis("Horizontal");
+        float verticalInput = Input.GetAxis("Vertical");
+
+        // Calculate the movement vector based on the input and move speed
+        Vector3 moveDirection = new Vector3(horizontalInput, 0, verticalInput) * moveSpeed;
+
+        // Set the horizontal velocity based on the movement vector
+        rb.velocity = new Vector3(moveDirection.x, rb.velocity.y, moveDirection.z);
     }
 
+    public void HandleJumpingInputs() {
+        // If the jump button was just pressed start jump timer
+        if (Input.GetButtonDown("Jump")) jumpStartTime = Time.time;
+        // If the jump button is released
+        if (Input.GetButtonUp("Jump")) {
+                // calculate how long it was held
+                float elapsedTime = Time.time - jumpStartTime;
+                Debug.Log(elapsedTime);
+                // apply jump force scaled by hold time
+                float jumpForce = Mathf.Lerp(minJumpForce, maxJumpForce, elapsedTime / jumpHoldDuration);
+                rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+                
+                // no longer on ground
+                unGround();
+        }
+    }
 }
 
