@@ -10,7 +10,7 @@ public class BlobController : MonoBehaviour
     public float maxJumpForce = 20f;
     public float jumpHoldDuration = 10_000f;
 
-    public float minBounceVel = 1f;
+    public float minBounceSpeed = 1f;
 
     private Rigidbody rb;
     private float maxReachedHeight;
@@ -86,15 +86,15 @@ public class BlobController : MonoBehaviour
     {
         // Calculate the bounce force based on the maximum reached height
         float potentialEnergy = - mass * Physics.gravity.y * maxReachedHeight;
-        float bounceVel = Mathf.Sqrt(2 * (potentialEnergy) / mass) * bounceDampening;
-        if (bounceVel < minBounceVel) {
-            bounceVel = 0f;
+        float kineticEnergy = potentialEnergy * bounceDampening;
+        float bounceSpeed = Mathf.Sqrt(2 * kineticEnergy / mass);
+        if (bounceSpeed < minBounceSpeed) {
+            bounceSpeed = 0f;
             ground();
         }
-        float scaledBounceForce = bounceVel * mass;
 
-        // If the blob collides with something, add a bounce force to its velocity
-        rb.velocity += Vector3.up * scaledBounceForce;
+        // If the blob collides with something, add a bounce velocity to its velocity
+        rb.velocity = new Vector3(rb.velocity.x, bounceSpeed, rb.velocity.z);
 
         // Reset the maximum reached height
         maxReachedHeight = 0f;
