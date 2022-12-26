@@ -13,6 +13,7 @@ public class BlobController : MonoBehaviour
     public float minBounceSpeed = 1f;
     public float GroundedHeightThreshold = 1f;
     public float CayoteTime = 0.1f;
+    public float jumpSquashSize = 0.5f;
 
     private Rigidbody rb;
     private float maxReachedHeight;
@@ -25,6 +26,8 @@ public class BlobController : MonoBehaviour
     private GameObject Jumping;
     private Renderer JumpingRenderer;
     private float CayoteDeadline;
+    private Vector3 MaxSquashScale;
+    private Vector3 OriginalScale;
 
     void Start()
     {
@@ -43,8 +46,12 @@ public class BlobController : MonoBehaviour
         Jumping = childTransform.gameObject;
         JumpingRenderer = Jumping.GetComponent<Renderer>();
 
-        SetGrounded(false);
+        // calculate max squash scale so we can lerp to this while holding jump
+        MaxSquashScale = transform.localScale;
+        OriginalScale = transform.localScale;
+        MaxSquashScale.y *= jumpSquashSize;
 
+        SetGrounded(false);
     }
 
     void Update()
@@ -56,7 +63,8 @@ public class BlobController : MonoBehaviour
         maxReachedHeight = Mathf.Max(maxReachedHeight, transform.position.y);
 
         // accept space bar inputs if grounded
-        if (isGrounded) HandleJumpingInputs();
+        HandleJumpingInputs();
+        SquashWhileJumping();
 
         // Sets state to ungrounded if off the ground for too long
         AboveGroundHandler();
@@ -94,6 +102,8 @@ public class BlobController : MonoBehaviour
         StandingRenderer.enabled = grounded;
         // If we are no longer on the ground. Then reset the isHoldingJump flag
         if (!grounded) isHoldingJump = false;
+        // Unsquash the scale
+        transform.localScale = OriginalScale;
     }
 
     // moves the blob based on wasd or arrow keys
@@ -110,6 +120,8 @@ public class BlobController : MonoBehaviour
     }
 
     public void HandleJumpingInputs() {
+        // Do not accept jumping inputs if not in the grounded state
+        if (!isGrounded) return;
         // If the jump button was just pressed start jump timer
         if (Input.GetButtonDown("Jump")) {
             isHoldingJump = true;
@@ -127,6 +139,17 @@ public class BlobController : MonoBehaviour
             // no longer on ground
             SetGrounded(false);
         }
+    }
+
+    public void SquashWhileJumping() {
+        if (!isHoldingJump) return;
+
+        float elapsedTime = Time.time - jumpStartTime;
+
+        // Clamp the lerp value to the range [0, 1]
+        float t = Mathf.Clamp01(elapsedTime / jumpHoldDuration);
+        // apply jump force scaled by hold time
+        transform.localScale = Vector3.Lerp(OriginalScale, MaxSquashScale, t);
     }
 
     // handles the case that we are in the air but are still in the grounded state.
