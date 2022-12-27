@@ -28,6 +28,8 @@ public class BlobController : MonoBehaviour
     private float CayoteDeadline;
     private Vector3 MaxSquashScale;
     private Vector3 OriginalScale;
+    private ParticleSystem particleSystem;
+    private bool playedParticles;
 
     void Start()
     {
@@ -45,6 +47,8 @@ public class BlobController : MonoBehaviour
         childTransform = transform.Find("Jumping");
         Jumping = childTransform.gameObject;
         JumpingRenderer = Jumping.GetComponent<Renderer>();
+
+        particleSystem = GetComponent<ParticleSystem>();
 
         // calculate max squash scale so we can lerp to this while holding jump
         MaxSquashScale = transform.localScale;
@@ -125,6 +129,7 @@ public class BlobController : MonoBehaviour
         // If the jump button was just pressed start jump timer
         if (Input.GetButtonDown("Jump")) {
             isHoldingJump = true;
+            playedParticles = false;
             jumpStartTime = Time.time;
         }
         // If the jump button is released
@@ -150,6 +155,12 @@ public class BlobController : MonoBehaviour
         float t = Mathf.Clamp01(elapsedTime / jumpHoldDuration);
         // apply jump force scaled by hold time
         transform.localScale = Vector3.Lerp(OriginalScale, MaxSquashScale, t);
+
+        //play particle effect if this is the first frame reaching max squash.
+        if (t == 1 && !playedParticles) {
+            particleSystem.Play();
+            playedParticles = true;
+        }
     }
 
     // handles the case that we are in the air but are still in the grounded state.
