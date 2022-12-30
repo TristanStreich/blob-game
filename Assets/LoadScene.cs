@@ -113,7 +113,7 @@ public class LoadScene : MonoBehaviour
             {
                 //create obj at rand height and rotation
                 GameObject NewLetter = Instantiate(JellyLetterPrefab, new Vector3(Random.Range(-10, 10), Random.Range(10, 15), 0), Quaternion.Euler(0, 0, Random.Range(0, 360)));
-
+               
                 //set it to child of UImanager
                 NewLetter.transform.SetParent(gameObject.transform);
 
