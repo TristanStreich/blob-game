@@ -28,6 +28,9 @@ public class BlobController : MonoBehaviour
     private float CayoteDeadline;
     private Vector3 MaxSquashScale;
     private Vector3 OriginalScale;
+    private SphereCollider collider;
+    private Vector3 OriginalColliderPostion;
+    private Vector3 MaxSquashColliderPosition;
     private ParticleSystem particleSystem;
     private bool playedParticles;
 
@@ -54,6 +57,12 @@ public class BlobController : MonoBehaviour
         MaxSquashScale = transform.localScale;
         OriginalScale = transform.localScale;
         MaxSquashScale.y *= jumpSquashSize;
+
+        collider = GetComponent<SphereCollider>();
+        OriginalColliderPostion = collider.center;
+        MaxSquashColliderPosition = new Vector3(OriginalColliderPostion.x,
+                                                 OriginalColliderPostion.y + collider.radius*2 * jumpSquashSize,
+                                                 OriginalColliderPostion.z);
 
         SetGrounded(false);
     }
@@ -108,6 +117,7 @@ public class BlobController : MonoBehaviour
         if (!grounded) isHoldingJump = false;
         // Unsquash the scale
         transform.localScale = OriginalScale;
+        collider.center = OriginalColliderPostion;
     }
 
     // moves the blob based on wasd or arrow keys
@@ -153,8 +163,9 @@ public class BlobController : MonoBehaviour
 
         // Clamp the lerp value to the range [0, 1]
         float t = Mathf.Clamp01(elapsedTime / jumpHoldDuration);
-        // apply jump force scaled by hold time
+        // squash the transform and offset collider
         transform.localScale = Vector3.Lerp(OriginalScale, MaxSquashScale, t);
+        collider.center = Vector3.Lerp(OriginalColliderPostion, MaxSquashColliderPosition, t);
 
         //play particle effect if this is the first frame reaching max squash.
         if (t == 1 && !playedParticles) {
