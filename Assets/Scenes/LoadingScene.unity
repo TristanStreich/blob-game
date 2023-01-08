@@ -1279,6 +1279,10 @@ MonoBehaviour:
   - Yeet
   - You can slide the loading bar yourself if you're strong enough.
   - Hold Down Jump to go higher (this is a tip for real life too.)
+  - Blobs full name is Blorballington Jr.
+  - Loading screens are my passion.
+  - Salsa dancing is NOT included in this game.
+  - We spared every expense.
   loadingBar: {fileID: 438271097}
   loadingText: {fileID: 589971268}
   QuipText: {fileID: 500188536}
