@@ -7,23 +7,28 @@ using UnityEngine.Events;
 public class BlobController : MonoBehaviour
 {
     public static event Action JumpingEvent;
-    public static float jumpForce;
-
-    public float blobJumpForce;
+    public float minJumpForce = 10f;
+    public float maxJumpForce = 20f;
+    public float jumpHoldDuration = 10_000f;
     public float moveSpeed;
+
+
+    private bool isGrounded;
+    private bool isHoldingJump;
+    private float jumpStartTime;
+
 
     private Rigidbody rb;
     
     void Awake()
     {
         rb = gameObject.GetComponent<Rigidbody>();
-        jumpForce = blobJumpForce;
     }
 
     // Update is called once per frame
     void Update()
     {
-        jumpingSystem();
+        HandleJumpingInputs();
         horizontalMovementSystem();
     }
 
@@ -38,13 +43,30 @@ public class BlobController : MonoBehaviour
         transform.position += moveDirection * Time.deltaTime;
     }
 
-    void jumpingSystem() {
-        if (Input.GetButtonDown("Jump")) {
-            jump();
-        }
+    void jump(float jumpForce) {
+        rb.AddForce(jumpForce * Vector3.up, ForceMode.Impulse);
+        JumpingEvent?.Invoke();
     }
 
-    void jump() {
-        JumpingEvent?.Invoke();
+    public void HandleJumpingInputs() {
+        // Do not accept jumping inputs if not in the grounded state
+        // if (!isGrounded) return;
+        // If the jump button was just pressed start jump timer
+        if (Input.GetButtonDown("Jump")) {
+            isHoldingJump = true;
+            jumpStartTime = Time.time;
+        }
+        // If the jump button is released
+        if (Input.GetButtonUp("Jump") && isHoldingJump) {
+            // calculate how long it was held
+            float elapsedTime = Time.time - jumpStartTime;
+            Debug.Log("Held Button For " + elapsedTime + " Seconds");
+            // apply jump force scaled by hold time
+            float jumpForce = Mathf.Lerp(minJumpForce, maxJumpForce, elapsedTime / jumpHoldDuration);
+            jump(jumpForce);
+            
+            // no longer on ground
+            // SetGrounded(false);
+        }
     }
 }
