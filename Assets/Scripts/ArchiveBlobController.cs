@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Utils;
 
-public class BlobController : MonoBehaviour
+public class ArchiveBlobController : MonoBehaviour
 {
     public float moveSpeed = 10f;
     public float bounceDampening = 0.8f;
