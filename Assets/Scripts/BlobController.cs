@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class VerticalScrollController : MonoBehaviour
+public class BlobController : MonoBehaviour
 {
     public static event Action JumpingEvent;
     public static float jumpForce;
