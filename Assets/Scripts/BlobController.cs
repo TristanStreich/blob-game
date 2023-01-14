@@ -7,10 +7,9 @@ using UnityEngine.Events;
 public class BlobController : MonoBehaviour
 {
     public static event Action JumpingEvent;
-    public float minJumpForce = 10f;
-    public float maxJumpForce = 20f;
     public float jumpHoldDuration = 10_000f;
     public float moveSpeed;
+    public float jumpForce = 4f;
 
 
     private bool isGrounded;
@@ -25,11 +24,15 @@ public class BlobController : MonoBehaviour
         rb = gameObject.GetComponent<Rigidbody>();
     }
 
-    // Update is called once per frame
+    // Update is called once per render frame
     void Update()
     {
-        HandleJumpingInputs();
         horizontalMovementSystem();
+    }
+
+    // called once per physics frame
+    void FixedUpdate() {
+        HandleJumpingInputs();
     }
 
     void horizontalMovementSystem() {
@@ -43,9 +46,8 @@ public class BlobController : MonoBehaviour
         transform.position += moveDirection * Time.deltaTime;
     }
 
-    void jump(float jumpForce) {
-        rb.AddForce(jumpForce * Vector3.up, ForceMode.Impulse);
-        JumpingEvent?.Invoke();
+    void setVertVelocity(float speed) {
+        rb.velocity = speed * Vector3.up;
     }
 
     public void HandleJumpingInputs() {
@@ -55,18 +57,19 @@ public class BlobController : MonoBehaviour
         if (Input.GetButtonDown("Jump")) {
             isHoldingJump = true;
             jumpStartTime = Time.time;
+            setVertVelocity(jumpForce);
         }
-        // If the jump button is released
-        if (Input.GetButtonUp("Jump") && isHoldingJump) {
-            // calculate how long it was held
-            float elapsedTime = Time.time - jumpStartTime;
-            Debug.Log("Held Button For " + elapsedTime + " Seconds");
-            // apply jump force scaled by hold time
-            float jumpForce = Mathf.Lerp(minJumpForce, maxJumpForce, elapsedTime / jumpHoldDuration);
-            jump(jumpForce);
-            
-            // no longer on ground
-            // SetGrounded(false);
+        // if not holding jump the rest of this function is useless
+        if (!isHoldingJump) return;
+
+        setVertVelocity(jumpForce);
+
+        // calculate how long it was held
+        float elapsedTime = Time.time - jumpStartTime;
+
+        // if jump is too long or we have released the button, then we stop applying the jump force
+        if (elapsedTime > jumpHoldDuration || Input.GetButtonUp("Jump")) {
+            isHoldingJump = false;
         }
     }
 }

@@ -476,10 +476,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4d3e7bae60e7b242af114f502a15784, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  minJumpForce: 3
-  maxJumpForce: 12
-  jumpHoldDuration: 0.15
+  jumpHoldDuration: 0.35
   moveSpeed: 3
+  jumpForce: 10
 --- !u!135 &1363994952
 SphereCollider:
   m_ObjectHideFlags: 0
