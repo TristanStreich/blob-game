@@ -363,7 +363,7 @@ GameObject:
   - component: {fileID: 1102759703}
   - component: {fileID: 1102759702}
   - component: {fileID: 1102759701}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Platform
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -484,6 +484,7 @@ MonoBehaviour:
   jumpForce: 10
   gravityScale: 30
   fallingGravityScale: 40
+  groundingRadius: 0.6
 --- !u!135 &1363994952
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -589,7 +590,7 @@ GameObject:
   - component: {fileID: 1438060741}
   - component: {fileID: 1438060740}
   - component: {fileID: 1438060739}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Platform
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -684,7 +685,7 @@ GameObject:
   - component: {fileID: 1544294682}
   - component: {fileID: 1544294681}
   - component: {fileID: 1544294680}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Platform
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -779,7 +780,7 @@ GameObject:
   - component: {fileID: 1838953017}
   - component: {fileID: 1838953016}
   - component: {fileID: 1838953015}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Platform
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -874,7 +875,7 @@ GameObject:
   - component: {fileID: 2020964699}
   - component: {fileID: 2020964698}
   - component: {fileID: 2020964697}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Platform
   m_TagString: Untagged
   m_Icon: {fileID: 0}

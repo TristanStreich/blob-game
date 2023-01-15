@@ -12,21 +12,42 @@ public class BlobController : MonoBehaviour
     public float jumpForce = 4f;
 
 
-    private bool isGrounded; //TODO: add checking ground to stop air jumping
+    private bool isGrounded;
     private bool isHoldingJump;
     private float jumpStartTime;
+    private int groundLayer;
 
 
     private Rigidbody rb;
+
+     private static List<GameObject> GetObjectsInLayer(int layer)
+ {
+     List<GameObject> ret = new List<GameObject>();
+     foreach (GameObject g in Resources.FindObjectsOfTypeAll<GameObject>())
+     {
+        Transform t = g.transform;
+         if (t.gameObject.layer == layer)
+         {
+             ret.Add (t.gameObject);
+         }
+     }
+     return ret;        
+ }
     
     void Start() {
         rb = gameObject.GetComponent<Rigidbody>();
+        int groundLayerNum = LayerMask.NameToLayer("Ground");
+        // layer mask is bit mask of length 32.
+        // to select just layer 3. You need a 32bit int
+        // with a one on only position 3. Hence the bit shift below
+        groundLayer = 1<<groundLayerNum;
     }
 
     // Update is called once per render frame
     void Update()
     {
         HorizontalMovementSystem();
+        CheckGroundedSystem();
     }
 
     // called once per physics frame
@@ -51,10 +72,9 @@ public class BlobController : MonoBehaviour
     }
 
     public void JumpingSystem() {
-        // Do not accept jumping inputs if not in the grounded state
-        // if (!isGrounded) return;
         // If the jump button was just pressed start jump timer
-        if (Input.GetButtonDown("Jump")) {
+        // only works on ground
+        if (isGrounded && Input.GetButtonDown("Jump")) {
             isHoldingJump = true;
             jumpStartTime = Time.time;
             setVertVelocity(jumpForce);
@@ -93,5 +113,12 @@ public class BlobController : MonoBehaviour
 
         // apply gravity which we just set
         rb.velocity -= thisFrameGravityScale * Time.deltaTime * Vector3.up;
+    }
+
+    public float groundingRadius = 1f;
+    void CheckGroundedSystem() {
+        bool groundedNow = Physics.OverlapSphere(transform.position, groundingRadius, groundLayer).Length > 0;
+        // if (groundedNow != isGrounded) Debug.Log("Set Grounded To: " + groundedNow);
+        isGrounded = groundedNow;
     }
 }
